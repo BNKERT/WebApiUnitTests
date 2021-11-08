@@ -34,26 +34,26 @@ namespace UnitTestWebApi.Controllers
 
         [HttpGet]
         [Route("{id}")]
-        public IActionResult GetProduct(int id)
+        public ActionResult<Product> GetProduct(int id)
         {
             throw new NotImplementedException();
         }
 
         [HttpPut]
-        public IActionResult UpdateProduct(Product product)
+        public ActionResult UpdateProduct(Product product)
         {
             throw new NotImplementedException();
         }
 
 
         [HttpPost]
-        public IActionResult CreateProduct(Product product)
+        public ActionResult<Product> CreateProduct(Product product)
         {
-            return new OkObjectResult(product);
+            return product;
         }
 
         [HttpDelete]
-        public IActionResult DeleteProduct(int id)
+        public ActionResult DeleteProduct(int id)
         {
             throw new NotImplementedException();
         }
