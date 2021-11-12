@@ -42,5 +42,44 @@ namespace WebApi.Tests
             List<Product> actual = _controller.GetAllProducts().Value;
             Assert.AreEqual(expected.Count, actual.Count);
         }
+
+        [TestMethod]
+        public void GetAllProducts_WhenTheStoreIsnotEmpty_ReturnsAListOfProducts()
+        {
+            //return []
+            _repositoryMock.Setup(repository => repository.getAllProducts()).Returns(new List<Product>
+            {
+            new Product { ID = 1, Name = "Bananas", Price = 1.50M}
+            });
+
+            List<Product> actual = _controller.GetAllProducts().Value;
+            Assert.AreEqual(1, actual.Count);
+        }
+
+
+
+        [TestMethod]
+        public void GetProduct_WhenTheStoreIsnotEmpty_ReturnsTheProductIfIdIsValid()
+        {
+            //arrange
+            _repositoryMock.Setup(repository => repository.getProduct(1)).Returns(new Product { ID = 1, Name = "Bananas", Price = 1.50M });
+            //act
+            Product actual = _controller.GetProduct(1).Value;
+            //assert
+            Assert.AreEqual(1, actual.ID);
+        }
+
+
+
+        [TestMethod]
+        public void GetProduct_WhenTheStoreIsEmpty_ReturnsNull()
+        {
+            //arrange
+            // Do not need to setup mock repo since it will be empty should return null (no values to choose from)
+            //act
+            Product actual = _controller.GetProduct(1).Value;
+            //assert
+            Assert.IsNull(actual);
+        }
     }
 }

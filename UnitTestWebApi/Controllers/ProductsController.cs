@@ -36,7 +36,7 @@ namespace UnitTestWebApi.Controllers
         [Route("{id}")]
         public ActionResult<Product> GetProduct(int id)
         {
-            throw new NotImplementedException();
+            return _repository.getProduct(id);
         }
 
         [HttpPut]
