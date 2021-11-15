@@ -81,5 +81,98 @@ namespace WebApi.Tests
             //assert
             Assert.IsNull(actual);
         }
+
+        [TestMethod]
+        public void UpdateProduct_WhenTheProductDoesNotExist_ReturnsNull()
+        {
+            //arrange
+            // Do not need to setup mock repo since it will be empty should return null (no values to choose from)
+            //act
+            var actual = _controller.UpdateProduct(new Product { ID = 1 });
+
+            //assert
+            Assert.IsNull(actual);
+        }
+
+        [TestMethod]
+        public void UpdateProduct_WhenTheProductDoesExist_ReturnsThatUpdatedProduct()
+        {
+
+            //arrange
+            //pass any integer returns product
+            _repositoryMock.Setup(repository => repository.getProduct(It.IsAny<int>())).Returns(new Product { ID = 1, Name = "Bananas", Price = 1.50M });
+
+            // Do not need to setup mock repo since it will be empty should return null (no values to choose from)
+            //act
+            Product actual = _controller.UpdateProduct(new Product { ID = 1, Name = "Apples", Price = 2.50M }).Value;
+
+            //assert
+            Assert.AreEqual(actual.Name, "Apples");
+            Assert.AreEqual(actual.Price, 2.50M);
+        }
+
+        [TestMethod]
+        public void CreateProduct_WhenTheProductDoesExist_ReturnsNull()
+        {
+
+            //arrange
+            //pass any integer returns product
+            _repositoryMock.Setup(repository => repository.getProduct(It.IsAny<int>())).Returns(new Product { ID = 1, Name = "Bananas", Price = 1.50M });
+
+            // Do not need to setup mock repo since it will be empty should return null (no values to choose from)
+            //act
+            var actual = _controller.CreateProduct(new Product { ID = 1, Name = "Apples", Price = 2.50M });
+
+            //assert
+            Assert.IsNull(actual);
+        }
+
+        [TestMethod]
+        public void CreateProduct_WhenTheProductDoesNotExist_ReturnsTheNewProduct()
+        {
+
+            //arrange
+            //pass any integer returns product
+
+            // Do not need to setup mock repo since it will be empty should return null (no values to choose from)
+            //act
+            Product actual = _controller.CreateProduct(new Product { ID = 1, Name = "Apples", Price = 2.50M }).Value;
+
+            //assert
+            Assert.AreEqual(actual.Name, "Apples");
+            Assert.AreEqual(actual.Price, 2.50M);
+        }
+
+        [TestMethod]
+        public void DeleteProduct_WhenTheProductDoesExist_ReturnTheRemovedProduct()
+        {
+            Product expectedProduct = new Product { ID = 1, Name = "Bananas", Price = 1.50M };
+            //arrange
+            //pass any integer returns product
+            _repositoryMock.Setup(repository => repository.getProduct(It.IsAny<int>())).Returns(expectedProduct);
+
+            // Do not need to setup mock repo since it will be empty should return null (no values to choose from)
+            //act
+            Product actual = _controller.DeleteProduct(1).Value;
+
+            //assert
+            Assert.AreEqual(actual.Name, expectedProduct.Name);
+            Assert.AreEqual(actual.Price, expectedProduct.Price);
+        }
+
+        [TestMethod]
+        public void CreateProduct_WhenTheProductDoesNotExist_ReturnsNull()
+        {
+
+            //arrange
+            //pass any integer returns product
+
+            // Do not need to setup mock repo since it will be empty should return null (no values to choose from)
+            //act
+            var actual = _controller.DeleteProduct(1);
+
+            //assert
+            Assert.IsNull(actual);
+        }
     }
 }

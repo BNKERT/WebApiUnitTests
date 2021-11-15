@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using UnitTestWebApi.Data;
 using UnitTestWebApi.Models;
 using UnitTestWebApi.Repositories;
 
@@ -40,22 +38,45 @@ namespace UnitTestWebApi.Controllers
         }
 
         [HttpPut]
-        public ActionResult UpdateProduct(Product product)
+        public ActionResult<Product> UpdateProduct(Product product)
         {
-            throw new NotImplementedException();
+            //mocking repository -> telling to return a valid product (not null)
+            Product existingProduct = _repository.getProduct(product.ID);
+            //mocked product isn't null so go in
+            if(existingProduct != null)
+            {
+                //update the mocked product
+                _repository.updateProduct(product);
+                //return that product
+                return product;
+            }
+
+            return null;
         }
 
 
         [HttpPost]
         public ActionResult<Product> CreateProduct(Product product)
         {
-            return product;
+            if(_repository.getProduct(product.ID) == null)
+            {
+                _repository.createProduct(product);
+                return product;
+            }
+            return null;
         }
 
         [HttpDelete]
-        public ActionResult DeleteProduct(int id)
+        public ActionResult<Product> DeleteProduct(int id)
         {
-            throw new NotImplementedException();
+            Product product = _repository.getProduct(id);
+            if (product != null)
+            {
+                _repository.deleteProduct(id);
+                return product;
+                
+            }
+            return null;
         }
 
     }
