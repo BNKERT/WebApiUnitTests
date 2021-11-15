@@ -12,10 +12,12 @@ namespace WebApi.Tests
     [TestClass]
     public class ProductsControllerTests
     {
+        //Private variables that will be shared througout the class
         private ProductsController _controller;
+        //Mocked interface that interacts with the DB, so we don't actually hit the DB
         private Mock<IProductRepository> _repositoryMock;
 
-        //run before each test
+        //run before each test (ie BeforeEach)
         [TestInitialize]
         public void Setup()
         {
@@ -23,14 +25,21 @@ namespace WebApi.Tests
             _controller = new ProductsController(_repositoryMock.Object);
         }
 
-        //run after each test
+        //run after each test (ie AfterEach)
         [TestCleanup]
         public void Cleanup()
         {
+            //set variables to null and allow the garbage collector to clean these for us
             _repositoryMock = null;
             _controller = null;
         }
-
+        /*
+         * Basic procedure for these tests is going to be
+         * 1. any setup that has to be done for Moq (ie manipulating return values so you can test what functionality you want)
+         * 2. Call the controller and cast the response as a Object result so we can look at the status code returned
+         * 3. Get the actual data from the response through the "Value" attribute
+         * 4. All assertions (generally a status code test and tests to ensure the data is correct)
+         */
         [TestMethod]
         public void GetAllProducts_WhenTheStoreIsEmpty_ReturnsAnEmptyList()
         {
