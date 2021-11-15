@@ -23,60 +23,66 @@ namespace UnitTestWebApi.Controllers
         //All basic CRUD (create,read,update,delete) operations
         //TODO: Implement endpoints
         [HttpGet]
-        public ActionResult<List<Product>> GetAllProducts()
+        public IActionResult GetAllProducts()
         {
             //returns 200 Status code with body being the result
-            return _repository.getAllProducts();
+            return Ok(_repository.getAllProducts());
         }
 
 
         [HttpGet]
         [Route("{id}")]
-        public ActionResult<Product> GetProduct(int id)
+        public IActionResult GetProduct(int id)
         {
-            return _repository.getProduct(id);
+            Product product = _repository.getProduct(id);
+            //Notfound's base class (with object) is ObjectResult
+            //okobjectresult's base class is ObjectResult (OK with an object parameter is an okobjectresult)
+            return product == null ? NotFound(product) : Ok(product);
         }
 
         [HttpPut]
-        public ActionResult<Product> UpdateProduct(Product product)
+        public IActionResult UpdateProduct(Product product)
         {
-            //mocking repository -> telling to return a valid product (not null)
             Product existingProduct = _repository.getProduct(product.ID);
-            //mocked product isn't null so go in
             if(existingProduct != null)
             {
-                //update the mocked product
                 _repository.updateProduct(product);
-                //return that product
-                return product;
+                //okobjectresult's base class is ObjectResult
+                return Ok(product);
             }
-
-            return null;
+            //Notfound's base class is ObjectResult
+            return NotFound(product);
         }
 
 
         [HttpPost]
-        public ActionResult<Product> CreateProduct(Product product)
+        public IActionResult CreateProduct(Product product)
         {
-            if(_repository.getProduct(product.ID) == null)
+            Product existingProduct = _repository.getProduct(product.ID);
+            if (existingProduct == null)
             {
                 _repository.createProduct(product);
-                return product;
+                //return product;
+                return Ok(product);
             }
-            return null;
+            //conflict's base class is ObjectResult
+            return Conflict(existingProduct);
         }
 
         [HttpDelete]
-        public ActionResult<Product> DeleteProduct(int id)
+        public IActionResult DeleteProduct(int id)
         {
             Product product = _repository.getProduct(id);
             if (product != null)
             {
                 _repository.deleteProduct(id);
-                return product;
+                //return product;
+                //okobjectresult's base class is ObjectResult
+                return Ok(product);
                 
             }
-            return null;
+            //Notfound's base class (with object) is ObjectResult
+            return NotFound(product);
         }
 
     }

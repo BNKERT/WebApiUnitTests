@@ -1,12 +1,11 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using UnitTestWebApi.Controllers;
 using Moq;
-using UnitTestWebApi.Data;
-using System.Linq;
 using UnitTestWebApi.Models;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using UnitTestWebApi.Repositories;
+using System.Net;
 
 namespace WebApi.Tests
 {
@@ -39,7 +38,9 @@ namespace WebApi.Tests
             _repositoryMock.Setup(repository => repository.getAllProducts()).Returns(new List<Product>());
 
             var expected = new List<Product>();
-            List<Product> actual = _controller.GetAllProducts().Value;
+            ObjectResult response = _controller.GetAllProducts() as ObjectResult;
+            List<Product> actual = response.Value as List<Product>;
+            Assert.AreEqual(response.StatusCode, (int)HttpStatusCode.OK);
             Assert.AreEqual(expected.Count, actual.Count);
         }
 
@@ -51,8 +52,9 @@ namespace WebApi.Tests
             {
             new Product { ID = 1, Name = "Bananas", Price = 1.50M}
             });
-
-            List<Product> actual = _controller.GetAllProducts().Value;
+            ObjectResult response = _controller.GetAllProducts() as ObjectResult;
+            List<Product> actual = response.Value as List<Product>;
+            Assert.AreEqual(response.StatusCode, (int)HttpStatusCode.OK);
             Assert.AreEqual(1, actual.Count);
         }
 
@@ -64,8 +66,10 @@ namespace WebApi.Tests
             //arrange
             _repositoryMock.Setup(repository => repository.getProduct(1)).Returns(new Product { ID = 1, Name = "Bananas", Price = 1.50M });
             //act
-            Product actual = _controller.GetProduct(1).Value;
+            ObjectResult response = _controller.GetProduct(1) as ObjectResult;
+            Product actual = response.Value as Product;
             //assert
+            Assert.AreEqual(response.StatusCode, (int)HttpStatusCode.OK);
             Assert.AreEqual(1, actual.ID);
         }
 
@@ -77,21 +81,25 @@ namespace WebApi.Tests
             //arrange
             // Do not need to setup mock repo since it will be empty should return null (no values to choose from)
             //act
-            Product actual = _controller.GetProduct(1).Value;
+            ObjectResult response = _controller.GetProduct(1) as ObjectResult;
+            Product actual = response.Value as Product;
             //assert
+            Assert.AreEqual(response.StatusCode, (int)HttpStatusCode.NotFound);
             Assert.IsNull(actual);
         }
 
         [TestMethod]
-        public void UpdateProduct_WhenTheProductDoesNotExist_ReturnsNull()
+        public void UpdateProduct_WhenTheProductDoesNotExist_ReturnsNotFound()
         {
             //arrange
             // Do not need to setup mock repo since it will be empty should return null (no values to choose from)
             //act
-            var actual = _controller.UpdateProduct(new Product { ID = 1 });
+            ObjectResult response = _controller.UpdateProduct(new Product { ID = 1 }) as ObjectResult;
+            Product actual = response.Value as Product;
 
             //assert
-            Assert.IsNull(actual);
+            Assert.AreEqual(response.StatusCode, (int)HttpStatusCode.NotFound);
+            Assert.AreEqual(actual.ID, 1);
         }
 
         [TestMethod]
@@ -104,15 +112,17 @@ namespace WebApi.Tests
 
             // Do not need to setup mock repo since it will be empty should return null (no values to choose from)
             //act
-            Product actual = _controller.UpdateProduct(new Product { ID = 1, Name = "Apples", Price = 2.50M }).Value;
+            ObjectResult response = _controller.UpdateProduct(new Product { ID = 1, Name = "Apples", Price = 2.50M }) as ObjectResult;
+            Product actual = response.Value as Product;
 
             //assert
+            Assert.AreEqual(response.StatusCode, (int)HttpStatusCode.OK);
             Assert.AreEqual(actual.Name, "Apples");
             Assert.AreEqual(actual.Price, 2.50M);
         }
 
         [TestMethod]
-        public void CreateProduct_WhenTheProductDoesExist_ReturnsNull()
+        public void CreateProduct_WhenTheProductDoesExist_ReturnsAConflict()
         {
 
             //arrange
@@ -121,10 +131,14 @@ namespace WebApi.Tests
 
             // Do not need to setup mock repo since it will be empty should return null (no values to choose from)
             //act
-            var actual = _controller.CreateProduct(new Product { ID = 1, Name = "Apples", Price = 2.50M });
+            ObjectResult response = _controller.CreateProduct(new Product { ID = 1, Name = "Apples", Price = 2.50M }) as ObjectResult;
+            Product actual = response.Value as Product;
 
             //assert
-            Assert.IsNull(actual);
+            //returns the original object as a conflict (object already in db with id)
+            Assert.AreEqual(response.StatusCode, (int)HttpStatusCode.Conflict);
+            Assert.AreEqual("Bananas", actual.Name);
+            Assert.AreEqual(1.50M, actual.Price);
         }
 
         [TestMethod]
@@ -136,9 +150,11 @@ namespace WebApi.Tests
 
             // Do not need to setup mock repo since it will be empty should return null (no values to choose from)
             //act
-            Product actual = _controller.CreateProduct(new Product { ID = 1, Name = "Apples", Price = 2.50M }).Value;
+            ObjectResult response = _controller.CreateProduct(new Product { ID = 1, Name = "Apples", Price = 2.50M }) as ObjectResult;
+            Product actual = response.Value as Product;
 
             //assert
+            Assert.AreEqual(response.StatusCode, (int)HttpStatusCode.OK);
             Assert.AreEqual(actual.Name, "Apples");
             Assert.AreEqual(actual.Price, 2.50M);
         }
@@ -153,15 +169,17 @@ namespace WebApi.Tests
 
             // Do not need to setup mock repo since it will be empty should return null (no values to choose from)
             //act
-            Product actual = _controller.DeleteProduct(1).Value;
+            ObjectResult response = _controller.DeleteProduct(1) as ObjectResult;
+            Product actual = response.Value as Product;
 
             //assert
+            Assert.AreEqual(response.StatusCode, (int)HttpStatusCode.OK);
             Assert.AreEqual(actual.Name, expectedProduct.Name);
             Assert.AreEqual(actual.Price, expectedProduct.Price);
         }
 
         [TestMethod]
-        public void CreateProduct_WhenTheProductDoesNotExist_ReturnsNull()
+        public void DeleteProduct_WhenTheProductDoesNotExist_ReturnsNotFound()
         {
 
             //arrange
@@ -169,9 +187,11 @@ namespace WebApi.Tests
 
             // Do not need to setup mock repo since it will be empty should return null (no values to choose from)
             //act
-            var actual = _controller.DeleteProduct(1);
-
+            
+            ObjectResult response = _controller.DeleteProduct(1) as ObjectResult;
+            Product actual = response.Value as Product;
             //assert
+            Assert.AreEqual(response.StatusCode, (int)HttpStatusCode.NotFound);
             Assert.IsNull(actual);
         }
     }
